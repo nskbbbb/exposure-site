@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FLAMES ❤️</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@700;900&family=Nunito:wght@400;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:Nunito,sans-serif;color:#4a1d2e;min-height:100vh;background:linear-gradient(160deg,#fff1f2,#ffe4ec 45%,#fde7d3)}
+h1,h2,.big{font-family:Fraunces,serif;font-weight:900;color:#e11d48;margin:0}
+.heart{position:fixed;bottom:-40px;opacity:.35;pointer-events:none;animation:rise linear infinite}
+@keyframes rise{to{transform:translateY(-115vh) rotate(25deg);opacity:0}}
+@keyframes pop{0%{transform:scale(.2) rotate(-20deg);opacity:0}70%{transform:scale(1.15)}100%{transform:scale(1);opacity:1}}
+@keyframes beat{50%{transform:scale(1.25)}}
+.pop{animation:pop .7s ease-out both}.beat{animation:beat .7s infinite}
+@media (prefers-reduced-motion:reduce){.heart,.pop,.beat{animation:none}}
+.wrap{position:relative;z-index:1;max-width:460px;margin:0 auto;padding:40px 16px;text-align:center}
+.wrap h1{font-size:clamp(3rem,12vw,4.5rem)}
+.card{background:rgba(255,255,255,.85);border-radius:24px;box-shadow:0 10px 30px rgba(225,29,72,.15);padding:28px;margin-top:28px}
+input,select{width:100%;padding:12px 14px;border:2px solid #fecdd3;border-radius:12px;font:inherit;margin-bottom:12px}
+input:focus,select:focus{outline:none;border-color:#e11d48}
+button{font:inherit;font-weight:700;cursor:pointer;border:0;border-radius:12px;padding:12px 20px;color:#fff;background:linear-gradient(90deg,#f43f5e,#fb923c);transition:transform .15s,box-shadow .15s}
+button:hover{transform:scale(1.03);box-shadow:0 6px 16px rgba(244,63,94,.35)}
+button:disabled{opacity:.4;cursor:default;transform:none;box-shadow:none}
+button.full{width:100%}
+button.ghost{background:#fff;color:#be123c;border:2px solid #fda4af}
+.err{color:#dc2626;font-size:.9rem;margin:0 0 10px}.note{font-size:.75rem;opacity:.65;margin:12px 0 0}
+.big{font-size:5.5rem;line-height:1}.rel{font-size:2.8rem}
+#admin{position:relative;z-index:1;max-width:1000px;margin:0 auto;padding:24px 16px}
+.bar{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-bottom:16px}
+.stat{background:#fff;border-radius:14px;padding:14px}.stat b{font-size:1.8rem;display:block}
+.tools{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}.tools input{flex:1;min-width:160px;margin:0}.tools select{width:auto;margin:0}
+.tablewrap{background:#fff;border-radius:14px;overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:.9rem}th{background:#ffe4e6;text-align:left}
+th,td{padding:10px 12px;border-top:1px solid #fee2e2;white-space:nowrap}
+.del{background:none;color:#dc2626;padding:0;font-weight:700}.del:hover{box-shadow:none;transform:none;text-decoration:underline}
+.pager{display:flex;gap:12px;justify-content:center;align-items:center;margin-top:14px}
+.hidden{display:none}
+</style>
+</head>
+<body>
+<div id="hearts"></div>
+
+<main id="game" class="wrap">
+  <h1>FLAMES ❤️</h1>
+  <p>Discover what the universe says about your bond!</p>
+  <div class="card">
+    <div id="form">
+      <input id="n1" maxlength="60" placeholder="Enter Your Name" aria-label="Your name">
+      <input id="n2" maxlength="60" placeholder="Enter Their Name" aria-label="Their name">
+      <p id="gerr" class="err hidden" role="alert"></p>
+      <button id="go" class="full">Reveal Our FLAMES ❤️</button>
+      <p class="note">Heads up: names you play with are stored for the host's activity dashboard. No other data is collected.</p>
+    </div>
+    <div id="loading" class="hidden"><div class="beat" style="font-size:4.5rem">🔥</div><div id="spin" class="big" style="font-size:4rem">F</div><p>Consulting the universe…</p></div>
+    <div id="result" class="hidden pop">
+      <p id="rnames"></p><div id="rletter" class="big"></div><h2 id="rname" class="rel"></h2>
+      <p id="rblurb" style="font-size:1.1rem"></p><p id="rwarn" class="note hidden">Your result is real, but we couldn't log this round.</p>
+      <button id="again" style="margin-top:16px">Play Again</button>
+    </div>
+  </div>
+</main>
+
+<section id="admin" class="hidden">
+  <div id="login" class="wrap hidden">
+    <h2>Admin sign in</h2>
+    <div class="card">
+      <input id="em" type="email" placeholder="Email" autocomplete="username">
+      <input id="pw" type="password" placeholder="Password" autocomplete="current-password">
+      <p id="lerr" class="err hidden"></p>
+      <button id="signin" class="full">Sign in</button>
+    </div>
+  </div>
+  <div id="dash" class="hidden">
+    <div class="bar"><h2>FLAMES submissions</h2><button class="ghost" id="logout">Log out</button></div>
+    <div class="stats">
+      <div class="stat"><b id="sTotal">0</b>games played</div>
+      <div class="stat"><b id="sToday">0</b>played today</div>
+      <div class="stat"><strong>Top names</strong><div id="sTop"></div></div>
+    </div>
+    <div class="tools">
+      <input id="q" placeholder="Search by name">
+      <select id="f"><option value="">All results</option><option>Friends</option><option>Lovers</option><option>Affection</option><option>Marriage</option><option>Enemies</option><option>Siblings</option></select>
+      <button id="refresh">Refresh</button>
+    </div>
+    <p id="derr" class="err hidden"></p>
+    <div class="tablewrap"><table><thead><tr><th>ID</th><th>Name one</th><th>Name two</th><th>Result</th><th>Played at</th><th></th></tr></thead><tbody id="rows"></tbody></table></div>
+    <div class="pager"><button class="ghost" id="prev">Prev</button><span id="pinfo"></span><button class="ghost" id="next">Next</button></div>
+  </div>
+</section>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<script>
+// ====== CONFIG: paste your values (anon key is public by design) ======
+const SUPABASE_URL = "https://YOUR-PROJECT.supabase.co";
+const SUPABASE_ANON_KEY = "YOUR-ANON-KEY";
+// =====================================================================
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+
+const RESULTS = {
+  F:["Friends","🤝","Partners in snacks and bad ideas. Loyal till the last fry."],
+  L:["Lovers","💘","Sparks! Someone is already picking a playlist for this."],
+  A:["Affection","🥰","Soft looks, shared umbrellas, suspiciously long hugs."],
+  M:["Marriage","💍","The universe has booked the venue. RSVP on time."],
+  E:["Enemies","⚔️","Rivals who fight over the thermostat. Dramatic, but never boring."],
+  S:["Siblings","🧸","Chaos, inside jokes, and stealing each other's hoodies."]
+};
+const clean = s => s.toLowerCase().replace(/[^a-z]/g, "");
+function remaining(a, b){
+  const f = {}; let rest = 0;
+  for (const c of clean(a)) f[c] = (f[c] || 0) + 1;
+  for (const c of clean(b)) { if (f[c] > 0) f[c]--; else rest++; }
+  for (const k in f) rest += f[k];
+  return rest;
+}
+function flames(a, b){
+  const n = remaining(a, b);
+  if (n === 0) return "F";
+  const l = ["F","L","A","M","E","S"]; let i = 0;
+  while (l.length > 1) { i = (i + n - 1) % l.length; l.splice(i, 1); if (i >= l.length) i = 0; }
+  return l[0];
+}
+
+for (let i = 0; i < 14; i++) {
+  const h = document.createElement("span"); h.className = "heart";
+  h.textContent = ["💖","💗","✨","💞"][i % 4];
+  h.style.cssText = `left:${(i*73)%100}%;font-size:${18+(i*7)%26}px;animation-duration:${9+(i*5)%9}s;animation-delay:${-i*1.3}s`;
+  $("hearts").appendChild(h);
+}
+
+const show = id => ["form","loading","result"].forEach(x => $(x).classList.toggle("hidden", x !== id));
+function gerr(m){ $("gerr").textContent = m; $("gerr").classList.toggle("hidden", !m); }
+$("go").onclick = async () => {
+  const a = $("n1").value.trim(), b = $("n2").value.trim();
+  gerr("");
+  if (!clean(a) || !clean(b)) return gerr("Please enter both names using at least one letter each.");
+  show("loading");
+  const spin = setInterval(() => $("spin").textContent = "FLAMES"[Math.floor(Math.random()*6)], 90);
+  const key = flames(a, b), [name, emoji, blurb] = RESULTS[key];
+  let saved = true;
+  try {
+    const [{ error }] = await Promise.all([
+      sb.from("flames_submissions").insert({ name_one: a, name_two: b, result: name }),
+      new Promise(r => setTimeout(r, 2200))
+    ]);
+    if (error) saved = false;
+  } catch { saved = false; }
+  clearInterval(spin);
+  $("rnames").innerHTML = `<b>${esc(a)}</b> &amp; <b>${esc(b)}</b>`;
+  $("rletter").textContent = key; $("rname").textContent = `${emoji} ${name}`; $("rblurb").textContent = blurb;
+  $("rwarn").classList.toggle("hidden", saved);
+  show("result");
+};
+$("again").onclick = () => { $("n1").value = ""; $("n2").value = ""; show("form"); };
+$("n2").addEventListener("keydown", e => e.key === "Enter" && $("go").click());
+
+const isAdminRoute = () => location.pathname.startsWith("/admin") || location.hash === "#admin";
+let page = 1, timer = null; const SIZE = 20;
+async function route(){
+  const admin = isAdminRoute();
+  $("game").classList.toggle("hidden", admin); $("admin").classList.toggle("hidden", !admin);
+  clearInterval(timer);
+  if (!admin) return;
+  const { data: { session } } = await sb.auth.getSession();
+  $("login").classList.toggle("hidden", !!session); $("dash").classList.toggle("hidden", !session);
+  if (session) { load(); timer = setInterval(load, 15000); }
+}
+window.addEventListener("hashchange", route);
+$("signin").onclick = async () => {
+  const { error } = await sb.auth.signInWithPassword({ email: $("em").value, password: $("pw").value });
+  $("lerr").textContent = "Wrong email or password."; $("lerr").classList.toggle("hidden", !error);
+  if (!error) route();
+};
+$("logout").onclick = async () => { await sb.auth.signOut(); route(); };
+async function load(){
+  const q = $("q").value.replace(/[%,()]/g, "").trim(), f = $("f").value;
+  let query = sb.from("flames_submissions").select("*", { count: "exact" })
+    .order("created_at", { ascending: false }).range((page-1)*SIZE, page*SIZE-1);
+  if (q) query = query.or(`name_one.ilike.%${q}%,name_two.ilike.%${q}%`);
+  if (f) query = query.eq("result", f);
+  const { data, count, error } = await query;
+  $("derr").classList.toggle("hidden", !error);
+  if (error) { $("derr").textContent = "Couldn't load submissions. Are you signed in with the admin email?"; return; }
+  $("rows").innerHTML = data.length ? data.map(r => `<tr><td>${esc(r.id.slice(0,8))}</td><td>${esc(r.name_one)}</td><td>${esc(r.name_two)}</td><td>${esc(r.result)}</td><td>${new Date(r.created_at).toLocaleString()}</td><td><button class="del" data-id="${esc(r.id)}">Delete</button></td></tr>`).join("") : `<tr><td colspan="6" style="text-align:center">No submissions match.</td></tr>`;
+  const pages = Math.max(1, Math.ceil((count || 0) / SIZE));
+  $("pinfo").textContent = `Page ${page} of ${pages}`; $("prev").disabled = page <= 1; $("next").disabled = page >= pages;
+  stats();
+}
+async function stats(){
+  const start = new Date(); start.setHours(0,0,0,0);
+  const [t, d, n] = await Promise.all([
+    sb.from("flames_submissions").select("*", { count: "exact", head: true }),
+    sb.from("flames_submissions").select("*", { count: "exact", head: true }).gte("created_at", start.toISOString()),
+    sb.from("flames_submissions").select("name_one,name_two").order("created_at", { ascending: false }).limit(5000)
+  ]);
+  $("sTotal").textContent = t.count ?? 0; $("sToday").textContent = d.count ?? 0;
+  const tally = {};
+  (n.data || []).forEach(r => [r.name_one, r.name_two].forEach(x => { const k = x.trim().toLowerCase(); tally[k] = (tally[k] || 0) + 1; }));
+  $("sTop").innerHTML = Object.entries(tally).sort((a,b) => b[1]-a[1]).slice(0,5).map(([k,c]) => `<div>${esc(k)} (${c})</div>`).join("");
+}
+$("rows").onclick = async e => {
+  const id = e.target.dataset.id; if (!id || !confirm("Delete this record?")) return;
+  await sb.from("flames_submissions").delete().eq("id", id); load();
+};
+$("q").oninput = () => { page = 1; load(); }; $("f").onchange = () => { page = 1; load(); };
+$("refresh").onclick = load; $("prev").onclick = () => { page--; load(); }; $("next").onclick = () => { page++; load(); };
+route();
+</script>
+</body>
+</html>
